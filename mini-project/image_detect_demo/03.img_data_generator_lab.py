@@ -1,3 +1,4 @@
+from distutils import extension
 import os
 import random
 import pathlib
@@ -29,18 +30,28 @@ def load_name_images(image_path_pattern):
 
 def scratch_image(image, use_flip=True, use_threshold=True, use_filter=True):
     # 어떤 증가규칙을 사용할 것인지 설정 (Flip or 밝기 or 화소 ...)
-    # TO-DO    
+    methods = [use_flip, use_threshold, use_filter]
     
     # 흐린 필터 작성
     # filter1 = np.ones((3, 3))
     # 오리지날 이미지를 배열로 저장
-    # TO-DO
+    images = [image]
 
+    # cv2.flip(x, 1)
     # 증가 규칙을 위한 함수
-    # TO-DO
+    scratch = np.array([
+        # Flip 처리
+        lambda x: cv2.flip(x, 1),
+        # 밝기 처리
+        lambda x: cv2.threshold(x ,100, 255, cv2.THRESH_TOZERO)[1],
+        # 블러 처리
+        lambda x: cv2.GaussianBlur(x, (5, 5), 0),
+    ])
 
     # 이미지 증가
-    # TO-DO
+    doubling_images = lambda f, img: np.r_[img, [f(i) for i in img]]
+    for func in scratch[methods]:
+        images = doubling_images(func, images)
 
     return images
 
@@ -81,14 +92,26 @@ def main():
     delete_dir(TEST_IMAGE_PATH, False)
 
     # 대상 이미지에 2배 정보를 테스트용 파일로 구분
-    # TO-DO
+    image_files = glob.glob(IMAGE_PATH_PATTERN)
+    random.shuffle(image_files)
+    for i in range(len(image_files) // 5):
+        shutil.move(str(image_files[i]), TEST_IMAGE_PATH)
 
     # 대상 이미지 읽기
     name_images = load_name_images(IMAGE_PATH_PATTERN)
 
     # 대상 이미지 별로 증가 작업
-    # for name_image in name_images:
-    #     # TO-DO
+    for name_image in name_images:
+        filename, extension = os.path.splitext(name_image[0])
+        image = name_image[1]
+        # 대상 이미지 증가
+        scratch_face_images = scratch_image(image)
+
+        # 대상 이미지 저장 
+        for idx, image in enumerate(scratch_face_images):
+            output_path = os.path.join(OUTPUT_IMAGE_DIR, f"{filename}_{str(idx)}{extension}")
+            print(f"출력 파일(절대 경로):{output_path}")
+            cv2.imwrite(output_path, image)
 
     return RETURN_SUCCESS
 
