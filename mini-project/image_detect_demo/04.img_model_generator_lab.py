@@ -37,7 +37,7 @@ def labeling_images(image_file_list):
         # 이미지 배열(RGB 이미지)
         x_data.append(image)
         # 이블 배열(파일명의 앞 2글자를 레이블로 이용)
-        label = int(file_name[0:2])
+        label = int(file_name[0:2]) - 1
         print(f"레이블:{label:02} 이미지 파일명:{file_name}")
         y_data = np.append(y_data, label).reshape(idx+1, 1)
     x_data = np.array(x_data)
@@ -120,14 +120,62 @@ def main():
 
     # 모델 정의
     model = Sequential()
-    # TO-DO
+    model.add(Conv2D(input_shape=(64, 64, 3), filters=32, kernel_size=(3,3), strides=(1,1), 
+                    padding="same", activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+    # 합성곱2
+    model.add(Conv2D(filters=32, kernel_size=(3,3), strides=(1,1), 
+                    padding="same", activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2,2)))
 
+    model.add(Dropout(0.01))
+
+    # 합성곱3
+    model.add(Conv2D(filters=64, kernel_size=(3,3), strides=(1,1), 
+                    padding="same", activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+
+    model.add(Dropout(0.05))
+
+    model.add(Flatten())
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dense(num_classes, activation='softmax'))
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
 
     # 모델 시각화
-
     # 학습
-    
+    if OUTPUT_MODEL_ONLY:
+        # 학습
+        model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs)
+    else:
+        # 학습 그래프
+        history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs,
+                            verbose=1, validation_data=(x_test, y_test))
+        # 일반화 정도의 평가/표시
+        test_loss, test_acc = model.evaluate(x_test, y_test, batch_size=batch_size, verbose=0)
+        print(f"validation loss:{test_loss}\r\nvalidation accuracy:{test_acc}")
+
+        # acc(정확도), val_acc(검증용 데이터 정확도) 그래프
+        plt.plot(history.history["accuracy"], label="acuuracy", ls="-", marker="o")
+        plt.plot(history.history["val_accuracy"], label="val_acuuracy", ls="-", marker="x")
+        plt.title("Model Accuracy")
+        plt.xlabel("Epoch")
+        plt.ylabel("Accruracy")
+        plt.legend(loc="best")
+        plt.show()
+
+        # 손실 기록 그래프
+        plt.plot(history.history["loss"], label="loss", ls="-", marker="o")
+        plt.plot(history.history["val_loss"], label="val_loss", ls="-", marker="x")
+        plt.title("Model Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.legend(loc="lower right")
+        plt.show()
+
     # 모델 저장
     model_file_path = os.path.join(OUTPUT_MODEL_DIR, OUTPUT_MODEL_FILE)
     model.save(model_file_path)

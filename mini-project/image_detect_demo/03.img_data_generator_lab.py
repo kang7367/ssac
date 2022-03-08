@@ -52,6 +52,7 @@ def scratch_image(image, use_flip=True, use_threshold=True, use_filter=True):
     doubling_images = lambda f, img: np.r_[img, [f(i) for i in img]]
     for func in scratch[methods]:
         images = doubling_images(func, images)
+        print(f"{images}, {np.shape(images)}")
 
     return images
 
