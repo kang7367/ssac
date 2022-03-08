@@ -3,7 +3,7 @@ import os
 import sys
 from urllib.parse import quote
 import requests
-import settings_1
+import settings
 
 # 지정한 키워드로 검색한 이미지의 URL 얻기
 def get_image_urls(keyword, total_num):
@@ -11,8 +11,8 @@ def get_image_urls(keyword, total_num):
     i = 0
     while i < total_num:
         # Query 
-        query = CUSTOM_SEARCH_URL + "?key=" + settings_1.API_KEY + \
-                "&cx=" + settings_1.CUSTOM_SEARCH_ENGINE + "&num=" + \
+        query = CUSTOM_SEARCH_URL + "?key=" + settings.API_KEY + \
+                "&cx=" + settings.CUSTOM_SEARCH_ENGINE + "&num=" + \
                 str(10 if(total_num-i) > 10 else (total_num-i)) + "&start=" + \
                 str(i+1) + "&q=" + quote(keyword) + "&searchType=image"
         print(query)

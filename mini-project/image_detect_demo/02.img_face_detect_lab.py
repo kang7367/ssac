@@ -3,7 +3,7 @@ import os
 import pathlib
 import glob
 import cv2
-import settings_2
+import settings
 
 def load_name_images(image_path_pattern):
     name_images = []
